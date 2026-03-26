@@ -68,11 +68,47 @@ function calcularMedia(alunoId: number): IResultadoMedia {
     // 5. Calcular bônus: presença >= 75% → +0.5 | entregou trabalhos → +1.0
     // 6. Média final = média + bônus (máximo 10)
 
+    let mediaPonderada = 0
+    let bonus = 0
+    let mediaFinal = 0
+
+    const aluno = alunos.find(a => a.id === alunoId)
+
+    if (!aluno || aluno.notas.p1 < 0 || aluno.notas.p1 > 10 ||
+        aluno.notas.p2 < 0 || aluno.notas.p2 > 10 ||
+        aluno.notas.p3 < 0 || aluno.notas.p3 > 10 ||
+        aluno.notas.p4 < 0 || aluno.notas.p4 > 10) {
+        return {
+            media: 0,
+            bonus: 0,
+            mediaFinal: 0,
+            ehValido: false
+        }
+    }
+
+    mediaPonderada = (aluno.notas.p1 * 1 + aluno.notas.p2 * 1 + aluno.notas.p3 * 2 + aluno.notas.p4 * 2) / 6
+
+    if (aluno.presenca >= 75) {
+        bonus = 0.5
+    }
+
+    if (aluno.entregouTrabalhos) {
+        bonus += 1.0
+    }
+
+
+    mediaFinal = mediaPonderada + bonus
+
+    if (mediaFinal > 10) {
+        mediaFinal = 10
+    }
+
+
     return {
-        media: 0,
-        bonus: 0,
-        mediaFinal: 0,
-        ehValido: false
+        media: mediaFinal,
+        bonus: bonus,
+        mediaFinal: mediaFinal,
+        ehValido: true
     }
 }
 
@@ -87,10 +123,36 @@ function verificarAprovacao(alunoId: number): IResultadoAprovacao {
     //    - mediaFinal >= 5 e < 7 → "recuperacao"
     //    - mediaFinal < 5 → "reprovado"
 
+    const resultadoMedia = calcularMedia(alunoId)
+
+
+    let situacao: 'aprovado' | 'recuperacao' | 'reprovado' | '' = ''
+
+    if (!resultadoMedia.ehValido) {
+
+        return {
+            situacao: '',
+            mediaFinal: 0,
+            ehValido: false
+        }
+    }
+
+    if (resultadoMedia.mediaFinal >= 7) {
+        situacao = 'aprovado'
+    }
+
+    if (resultadoMedia.mediaFinal >= 5 && resultadoMedia.mediaFinal < 7) {
+        situacao = 'recuperacao'
+    }
+
+    if (resultadoMedia.mediaFinal < 5) {
+        situacao = 'reprovado'
+    }
+
     return {
-        situacao: '',
-        mediaFinal: 0,
-        ehValido: false
+        situacao: situacao,
+        mediaFinal: resultadoMedia.mediaFinal,
+        ehValido: true
     }
 }
 

@@ -59,11 +59,44 @@ function calcularReserva(reserva: IReserva): IResultadoReserva {
     // 6. Se café da manhã: adicionar R$ 30 por noite
     // 7. Calcular valorTotal: (diária × noites) - desconto + (café × noites)
 
+    let valorDiaria = 0
+    let desconto = 0
+    let valorTotal = 0
+    let valorCafe = 0
+
+    const quarto = quartos.find(q => q.id === reserva.quartoId)
+
+    if (!quarto || reserva.noites < 1 || reserva.noites > 30 || reserva.hospedes > quarto.capacidade) {
+        return {
+            valorDiaria: 0,
+            valorTotal: 0,
+            desconto: 0,
+            ehValida: false
+        }
+    }
+
+    valorDiaria = quarto.precoNoite
+
+    if ([12, 1, 2].includes(reserva.mes)) {
+        valorDiaria *= 1.30
+    }
+
+    if(reserva.noites >= 3) {
+        desconto = 0.10 * (valorDiaria * reserva.noites)
+    }
+
+    if(reserva.cafeDaManha){
+        valorCafe = 30*reserva.noites
+    }
+
+    valorTotal = (valorDiaria*reserva.noites) - desconto + (valorCafe)
+
+
     return {
-        valorDiaria: 0,
-        valorTotal: 0,
-        desconto: 0,
-        ehValida: false
+        valorDiaria: valorDiaria,
+        valorTotal: valorTotal,
+        desconto: desconto,
+        ehValida: true
     }
 }
 

@@ -62,13 +62,103 @@ function calcularPedido(pedido: IPedido): IResultadoPedido {
     // 6. Calcular taxa de entrega: R$ 7,00 ou grátis se subtotal > R$ 80,00
     // 7. Calcular valor total: subtotal - desconto + taxaEntrega
 
-    return {
-        subtotal: 0,
-        desconto: 0,
-        taxaEntrega: 0,
-        valorTotal: 0,
-        ehValido: false
+    let subtotal = 0
+    let desconto = 0
+    let taxaEntrega = 7
+    let valorTotal = 0
+    let quantidadePizzaGG = 0
+    let quantidadePizzas = 0
+
+
+
+    if (pedido.itens.length === 0) {
+        return {
+            subtotal: 0,
+            desconto: 0,
+            taxaEntrega: 0,
+            valorTotal: 0,
+            ehValido: false
+        }
     }
+
+    subtotal = pedido.itens.reduce((acc, item) => {
+        const pizza = cardapio.find(p => p.id === item.pizzaId)
+        if (!pizza) return acc // Pizza não encontrada, ignora
+
+        const itemTotal = item.quantidade * pizza.preco
+        if (item.bordaRecheada) {
+            return acc + itemTotal + (8 * item.quantidade)
+        }
+        return acc + itemTotal
+    }, 0)
+
+
+
+    quantidadePizzaGG = pedido.itens.reduce((acc, item) => {
+        const pizza = cardapio.find(p => p.id === item.pizzaId);
+
+        if (!pizza) return acc
+
+
+        if (pizza.tamanho === 'G' || pizza.tamanho === 'GG') {
+            return acc + item.quantidade;
+        }
+
+        return acc;
+    }, 0);
+
+
+    quantidadePizzas = pedido.itens.reduce((acc, item) => {
+        const pizza = cardapio.find(p => p.id === item.pizzaId);
+
+        if (!pizza) return acc
+
+
+        return acc + item.quantidade;
+    }, 0);
+
+
+
+    if (subtotal < 20) {
+        return {
+            subtotal: 0,
+            desconto: 0,
+            taxaEntrega: 0,
+            valorTotal: 0,
+            ehValido: false
+        }
+    }
+
+    if (quantidadePizzaGG >= 2) {
+        desconto = subtotal * 0.1
+    }
+
+    if (quantidadePizzas > 5) {
+        return {
+            subtotal: 0,
+            desconto: 0,
+            taxaEntrega: 0,
+            valorTotal: 0,
+            ehValido: false
+        }
+    }
+
+    if (subtotal > 80) {
+        taxaEntrega = 0
+    }
+
+    valorTotal = subtotal - desconto + taxaEntrega
+
+
+    return {
+        subtotal: subtotal,
+        desconto: desconto,
+        taxaEntrega: taxaEntrega,
+        valorTotal: valorTotal,
+        ehValido: true
+    }
+
+
 }
 
 // ==================== TESTES ====================
